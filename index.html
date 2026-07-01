@@ -36,6 +36,23 @@
       background: var(--page);
       color: var(--ink);
       padding-bottom: 34px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    input,
+    textarea,
+    select {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      user-select: text;
+    }
+
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+      pointer-events: none;
     }
 
     img {
@@ -1499,6 +1516,24 @@
       ["approveSelected", "Selected moderation items approved and notifications sent."]
     ].forEach(([id, message]) => {
       document.getElementById(id).addEventListener("click", () => showToast(message));
+    });
+
+    document.addEventListener("contextmenu", event => event.preventDefault());
+
+    document.addEventListener("dragstart", event => event.preventDefault());
+
+    document.addEventListener("copy", event => event.preventDefault());
+
+    document.addEventListener("keydown", event => {
+      const key = event.key.toLowerCase();
+      const blockedCombo =
+        (event.ctrlKey || event.metaKey) && ["s", "u", "c", "p"].includes(key);
+      const blockedDevtools =
+        key === "f12" ||
+        (event.ctrlKey && event.shiftKey && ["i", "j", "c"].includes(key));
+      if (blockedCombo || blockedDevtools) {
+        event.preventDefault();
+      }
     });
   </script>
 </body>
