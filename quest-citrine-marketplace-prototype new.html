@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quest / Citrine Marketplace Prototype</title>
+  <style>
+    :root {
+      --page: #f5f2ea;
+      --surface: #ffffff;
+      --surface-soft: #f9f6ef;
+      --ink: #182027;
+      --muted: #65717c;
+      --line: #ded8cb;
+      --amber: #d8942e;
+      --amber-dark: #9f6415;
+      --teal: #087f7a;
+      --green: #2f7d45;
+      --blue: #3867a8;
+      --rose: #b74e5a;
+      --charcoal: #242a2f;
+      --shadow: 0 18px 42px rgba(35, 38, 42, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--page);
+      color: var(--ink);
+      padding-bottom: 34px;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 14px clamp(16px, 4vw, 44px);
+      background: rgba(255, 255, 255, 0.92);
+      border-bottom: 1px solid rgba(222, 216, 203, 0.9);
+      backdrop-filter: blur(16px);
+    }
+
+    .app-footer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--muted);
+      background: rgba(245, 242, 234, 0.94);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 850;
+      letter-spacing: 0;
+    }
+
+    .mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--charcoal);
+      color: #f7cc69;
+      font-weight: 900;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav button,
+    .segmented button,
+    .chip,
+    .ghost,
+    .outline,
+    .primary,
+    .icon-button {
+      min-height: 40px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      padding: 9px 13px;
+      color: var(--ink);
+      background: transparent;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .nav button.active,
+    .segmented button.active,
+    .chip.active {
+      background: #23333a;
+      color: #fff9ed;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .primary {
+      background: var(--amber);
+      color: #17140e;
+      border-color: #c17a1c;
+    }
+
+    .outline,
+    .ghost {
+      border-color: var(--line);
+      background: #fff;
+    }
+
+    .shell {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .view {
+      display: none;
+      padding: 30px 0 56px;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .hero {
+      min-height: 410px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(330px, 0.72fr);
+      align-items: end;
+      gap: 28px;
+      padding: clamp(28px, 5vw, 56px);
+      overflow: hidden;
+      color: #fff9ec;
+      background:
+        linear-gradient(90deg, rgba(16, 21, 23, 0.92), rgba(16, 21, 23, 0.52) 58%, rgba(16, 21, 23, 0.12)),
+        url("https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=82") center / cover;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .hero.hidden {
+      display: none;
+    }
+
+    .hero h1 {
+      max-width: 760px;
+      margin: 0 0 16px;
+      font-size: clamp(42px, 6vw, 78px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      max-width: 650px;
+      margin: 0 0 26px;
+      color: rgba(255, 249, 236, 0.84);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .hero-panel {
+      align-self: stretch;
+      display: grid;
+      align-content: end;
+      gap: 12px;
+      min-height: 300px;
+    }
+
+    .stat-band {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.13);
+      backdrop-filter: blur(12px);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 25px;
+    }
+
+    .stat span {
+      color: rgba(255, 249, 236, 0.74);
+      font-size: 13px;
+    }
+
+    .search-panel {
+      margin-top: -36px;
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr 0.75fr auto;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: var(--shadow);
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid #d7d1c5;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--ink);
+      background: #fff;
+      font-size: 15px;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 650;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 38px 0 16px;
+    }
+
+    .section-head h2,
+    .panel h2 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .section-head p,
+    .muted {
+      margin: 7px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 18px;
+    }
+
+    .chip {
+      border-color: var(--line);
+      background: #fff;
+    }
+
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .event-card,
+    .panel,
+    .metric,
+    .timeline-item,
+    .table-panel,
+    .ticket,
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: 0 8px 20px rgba(37, 34, 29, 0.05);
+    }
+
+    .event-card {
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: 190px 1fr;
+    }
+
+    .event-media {
+      position: relative;
+      background: #ddd;
+    }
+
+    .event-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #fbf1d8;
+      color: #6d4311;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .badge.live {
+      background: #e7f3eb;
+      color: var(--green);
+    }
+
+    .badge.warn {
+      background: #fbe7e7;
+      color: var(--rose);
+    }
+
+    .badge.info {
+      background: #e7edf8;
+      color: var(--blue);
+    }
+
+    .event-media .badge {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .event-body {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .event-body h3,
+    .mini-card h3 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.18;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .price {
+      font-weight: 900;
+      font-size: 20px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .detail-hero {
+      overflow: hidden;
+    }
+
+    .detail-hero img {
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+    }
+
+    .detail-copy {
+      padding: 22px;
+    }
+
+    .detail-copy h2 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1;
+    }
+
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .slot {
+      min-height: 70px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      text-align: left;
+    }
+
+    .slot.active {
+      border-color: var(--teal);
+      background: #e8f6f4;
+    }
+
+    .booking-card {
+      position: sticky;
+      top: 86px;
+      padding: 18px;
+    }
+
+    .booking-card h3,
+    .panel h3,
+    .table-panel h3 {
+      margin: 0 0 12px;
+      font-size: 21px;
+    }
+
+    .credit-row,
+    .line-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .credit-row strong,
+    .line-row strong {
+      color: var(--ink);
+    }
+
+    .drawer {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      background: rgba(18, 24, 29, 0.45);
+    }
+
+    .drawer.open {
+      display: grid;
+      justify-items: end;
+    }
+
+    .drawer-panel {
+      width: min(470px, 100%);
+      height: 100%;
+      padding: 22px;
+      overflow: auto;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .icon-button {
+      width: 40px;
+      padding: 0;
+      border-color: var(--line);
+      background: #fff;
+      font-size: 20px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 10px;
+      align-items: start;
+      color: var(--muted);
+    }
+
+    .dot {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 999px;
+      background: #efe9dc;
+      color: #625c51;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .step.done .dot,
+    .step.active .dot {
+      background: var(--teal);
+      color: white;
+    }
+
+    .step strong {
+      display: block;
+      color: var(--ink);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 14px 0 18px;
+    }
+
+    .metric {
+      padding: 16px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .side-menu {
+      position: sticky;
+      top: 86px;
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+    }
+
+    .side-menu button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #3d464e;
+      text-align: left;
+      font-weight: 800;
+    }
+
+    .side-menu button.active {
+      background: #23333a;
+      color: #fff;
+    }
+
+    .portal-panel {
+      display: none;
+    }
+
+    .portal-panel.active {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: #4a535b;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    label input,
+    label select,
+    label textarea {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #d6d0c4;
+      border-radius: 8px;
+      padding: 10px 11px;
+      color: var(--ink);
+      background: #fff;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    textarea {
+      min-height: 104px;
+      resize: vertical;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .table-panel {
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-soft);
+      color: #4c555d;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .timeline-item {
+      padding: 16px;
+    }
+
+    .timeline-item h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .timeline-item ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .ticket {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 16px;
+      padding: 16px;
+      margin-top: 14px;
+      background: #fffef9;
+    }
+
+    .qr {
+      display: grid;
+      width: 110px;
+      height: 110px;
+      place-items: center;
+      border: 8px solid #191f25;
+      background:
+        linear-gradient(90deg, #191f25 14px, transparent 14px) 0 0 / 28px 28px,
+        linear-gradient(#191f25 14px, transparent 14px) 0 0 / 28px 28px,
+        #fff;
+      color: transparent;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .mini-card {
+      overflow: hidden;
+    }
+
+    .mini-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .mini-card div {
+      padding: 14px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(18, 24, 29, 0.54);
+    }
+
+    .modal.open {
+      display: grid;
+    }
+
+    .modal-card {
+      width: min(540px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      padding: 22px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .interest-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 56px;
+      z-index: 70;
+      display: none;
+      transform: translateX(-50%);
+      max-width: min(520px, calc(100% - 32px));
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: #172027;
+      color: #fff;
+      box-shadow: var(--shadow);
+      font-weight: 750;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    @media (max-width: 980px) {
+      .topbar,
+      .hero,
+      .search-panel,
+      .two-col,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+
+      .event-grid,
+      .mini-grid,
+      .dashboard-grid,
+      .flow-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .booking-card,
+      .side-menu {
+        position: static;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .shell {
+        width: min(100% - 24px, 1240px);
+      }
+
+      .hero {
+        min-height: 560px;
+        padding: 28px 18px;
+      }
+
+      .hero h1 {
+        font-size: 42px;
+      }
+
+      .stat-band,
+      .event-grid,
+      .dashboard-grid,
+      .flow-grid,
+      .mini-grid,
+      .form-grid,
+      .slot-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .ticket {
+        grid-template-columns: 1fr;
+      }
+
+      th,
+      td {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="mark">Q</span><span>Quest Citrine</span></div>
+    <nav class="nav" aria-label="Primary">
+      <button class="active" data-view-target="discover">Discover</button>
+      <button data-view-target="booking">Booking</button>
+      <button data-view-target="attendee">My Quest</button>
+      <button data-view-target="organizer">Organizer</button>
+      <button data-view-target="admin">Admin</button>
+      <button data-view-target="journeys">Journeys</button>
+    </nav>
+    <div class="actions">
+      <button class="outline" id="openOnboarding">Get Started</button>
+      <button class="primary" data-view-target="booking">Book Now</button>
+    </div>
+  </header>
+
+  <footer class="app-footer">
+    This is for internal circulation only. Copyright TSX INDIA PRIVATE LIMITED.
+  </footer>
+
+  <main>
+    <section class="hero">
+      <div>
+        <span class="badge">Community-first marketplace</span>
+        <h1>Discover experiences worth leaving the house for.</h1>
+        <p>Curated workshops, masterclasses, pop-ups, and community events with credits, memberships, smart recommendations, and trusted organizer workflows.</p>
+        <div class="actions">
+          <button class="primary" data-view-target="discover">Explore Events</button>
+          <button class="outline" data-view-target="organizer">List a Workshop</button>
+        </div>
+      </div>
+      <div class="hero-panel">
+        <div class="stat-band">
+          <div class="stat"><strong>18K</strong><span>monthly discovery visits</span></div>
+          <div class="stat"><strong>74%</strong><span>seat utilization target</span></div>
+          <div class="stat"><strong>12%</strong><span>commission model</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view active" id="discover">
+      <div class="shell">
+        <div class="search-panel" aria-label="Event search">
+          <label class="field">Search
+            <input id="searchInput" type="search" value="ceramics, wellness, design" aria-label="Search events">
+          </label>
+          <label class="field">Location
+            <select id="locationSelect" aria-label="Location">
+              <option>All neighborhoods</option>
+              <option>Al Quoz</option>
+              <option>Jumeirah</option>
+              <option>Business Bay</option>
+              <option>Online</option>
+            </select>
+          </label>
+          <label class="field">Date
+            <select aria-label="Date">
+              <option>This weekend</option>
+              <option>Today</option>
+              <option>Next 7 days</option>
+              <option>This month</option>
+            </select>
+          </label>
+          <button class="primary" id="runSearch">Search</button>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <h2>Recommended for you</h2>
+            <p>Personalized by interests, location, credit balance, organizer follows, and live inventory.</p>
+          </div>
+          <button class="ghost" id="savePreferences">Save preferences</button>
+        </div>
+
+        <div class="toolbar" id="categoryFilters">
+          <button class="chip active" data-filter="all">All</button>
+          <button class="chip" data-filter="creative">Creative</button>
+          <button class="chip" data-filter="wellness">Wellness</button>
+          <button class="chip" data-filter="food">Food</button>
+          <button class="chip" data-filter="community">Community</button>
+          <button class="chip" data-filter="family">Family</button>
+        </div>
+
+        <div class="event-grid" id="eventGrid"></div>
+
+        <div class="section-head">
+          <div>
+            <h2>Featured communities</h2>
+            <p>Follow brands and neighborhoods to power newsletters, push alerts, and discovery boosts.</p>
+          </div>
+        </div>
+        <div class="mini-grid">
+          <article class="mini-card">
+            <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=82" alt="People in a design studio">
+            <div><h3>Studio Circuit</h3><p class="muted">Design labs, portfolio salons, and founder-led creative sprints.</p></div>
+          </article>
+          <article class="mini-card">
+            <img src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=900&q=82" alt="Yoga class in a sunlit studio">
+            <div><h3>Mindful Weekends</h3><p class="muted">Yoga, breathwork, nutrition, and recovery sessions.</p></div>
+          </article>
+          <article class="mini-card">
+            <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=82" alt="Community workshop table">
+            <div><h3>Neighborhood Makers</h3><p class="muted">Family-friendly crafts, repair cafes, and local pop-ups.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="booking">
+      <div class="shell two-col">
+        <article class="panel detail-hero">
+          <img id="detailImage" src="https://images.unsplash.com/photo-1493106819501-66d381c466f1?auto=format&fit=crop&w=1400&q=82" alt="Pottery workshop table">
+          <div class="detail-copy">
+            <span class="badge live" id="detailCategory">Creative</span>
+            <h2 id="detailTitle">Ceramic Handbuilding Weekend</h2>
+            <p class="muted" id="detailDescription">A tactile small-batch workshop for beginners. Learn pinch, coil, slab forms, glaze basics, and leave with two fired pieces shipped to your door.</p>
+            <div class="meta">
+              <span id="detailHost">Hosted by Clay Room Social</span>
+              <span id="detailLocation">Al Quoz</span>
+              <span id="detailLevel">Beginner friendly</span>
+            </div>
+            <div class="section-head">
+              <div>
+                <h2>Choose a slot</h2>
+                <p>Availability validates before checkout and inventory updates after payment.</p>
+              </div>
+            </div>
+            <div class="slot-grid" id="slotGrid">
+              <button class="slot active"><strong>Sat, 11 Jul</strong><br><span class="muted">10:00 AM · 6 seats</span></button>
+              <button class="slot"><strong>Sun, 12 Jul</strong><br><span class="muted">3:00 PM · 2 seats</span></button>
+              <button class="slot"><strong>Fri, 17 Jul</strong><br><span class="muted">6:30 PM · Waitlist</span></button>
+              <button class="slot"><strong>Sat, 18 Jul</strong><br><span class="muted">11:30 AM · 8 seats</span></button>
+            </div>
+          </div>
+        </article>
+
+        <aside class="panel booking-card">
+          <h3>Booking summary</h3>
+          <div class="credit-row"><span>Ticket</span><strong id="summaryPrice">AED 105</strong></div>
+          <div class="credit-row"><span>Quest credits</span><strong>-AED 20</strong></div>
+          <div class="credit-row"><span>Platform fee</span><strong>AED 5</strong></div>
+          <div class="line-row"><span>Total today</span><strong id="summaryTotal">AED 90</strong></div>
+          <p class="muted">Cancellation is fully refundable until 24 hours before the event. Organizer cancellation includes loyalty credits.</p>
+          <div class="actions">
+            <button class="primary" id="openCheckout">Continue</button>
+            <button class="outline" id="joinWaitlist">Join Waitlist</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="view" id="attendee">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>My Quest</h2>
+            <p>Bookings, credits, tickets, referrals, favorites, reminders, and cancellations in one attendee workspace.</p>
+          </div>
+          <button class="primary" data-view-target="discover">Find another event</button>
+        </div>
+        <div class="dashboard-grid">
+          <div class="metric"><span>Credits</span><strong>AED 55</strong></div>
+          <div class="metric"><span>Upcoming bookings</span><strong>3</strong></div>
+          <div class="metric"><span>Referral rewards</span><strong>8</strong></div>
+          <div class="metric"><span>Followed brands</span><strong>16</strong></div>
+        </div>
+        <div class="two-col">
+          <div class="panel" style="padding:18px">
+            <h3>Upcoming ticket</h3>
+            <div class="ticket">
+              <div class="qr">QR</div>
+              <div>
+                <span class="badge live">Confirmed</span>
+                <h3>Ceramic Handbuilding Weekend</h3>
+                <p class="muted">Sat, 11 Jul · 10:00 AM · Clay Room Social · Booking ID QST-4821</p>
+                <div class="actions">
+                  <button class="outline" id="calendarAction">Add to Calendar</button>
+                  <button class="outline" id="cancelBooking">Cancel Booking</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel" style="padding:18px">
+            <h3>Referral and loyalty</h3>
+            <div class="credit-row"><span>Referral code</span><strong>CITRINE250</strong></div>
+            <div class="credit-row"><span>Next reward</span><strong>AED 15 after 1 booking</strong></div>
+            <div class="credit-row"><span>Membership tier</span><strong>Explorer</strong></div>
+            <p class="muted">Credits apply automatically at checkout and are earned from bookings, organizer cancellations, and referrals.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="organizer">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>Organizer portal</h2>
+            <p>Brand verification, listing creation, inventory, attendee management, analytics, marketing, and payout operations.</p>
+          </div>
+          <button class="primary" id="publishListing">Submit for moderation</button>
+        </div>
+        <div class="dashboard-grid">
+          <div class="metric"><span>Gross sales</span><strong>AED 36.5K</strong></div>
+          <div class="metric"><span>Utilization</span><strong>78%</strong></div>
+          <div class="metric"><span>Waitlist</span><strong>42</strong></div>
+          <div class="metric"><span>Next payout</span><strong>AED 5.2K</strong></div>
+        </div>
+        <div class="workspace">
+          <aside class="panel side-menu" id="organizerMenu">
+            <button class="active" data-portal="listing">Create listing</button>
+            <button data-portal="inventory">Inventory</button>
+            <button data-portal="attendees">Attendees</button>
+            <button data-portal="analytics">Analytics</button>
+            <button data-portal="payouts">Payouts</button>
+          </aside>
+          <div>
+            <div class="portal-panel active" id="listing">
+              <div class="panel" style="padding:18px">
+                <h3>Workshop draft</h3>
+                <div class="form-grid">
+                  <label>Title<input value="Sourdough & Seasonal Spreads"></label>
+                  <label>Category<select><option>Food</option><option>Creative</option><option>Wellness</option></select></label>
+                  <label>Price<input value="AED 140"></label>
+                  <label>Capacity<input value="18 seats"></label>
+                  <label>Venue<input value="Al Fahidi Kitchen Studio"></label>
+                  <label>Verification<select><option>Verified brand</option><option>Pending verification</option></select></label>
+                  <label class="full">Description<textarea>Hands-on sourdough baking session with a take-home starter, seasonal preserves, and a shared community table.</textarea></label>
+                </div>
+              </div>
+            </div>
+            <div class="portal-panel" id="inventory">
+              <div class="table-panel">
+                <table>
+                  <thead><tr><th>Slot</th><th>Sold</th><th>Capacity</th><th>Waitlist</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td>12 Jul · 11 AM</td><td>16</td><td>18</td><td>4</td><td><span class="badge live">Selling</span></td></tr>
+                    <tr><td>19 Jul · 4 PM</td><td>18</td><td>18</td><td>11</td><td><span class="badge warn">Sold out</span></td></tr>
+                    <tr><td>26 Jul · 10 AM</td><td>7</td><td>18</td><td>0</td><td><span class="badge info">Boost</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="portal-panel" id="attendees">
+              <div class="table-panel">
+                <table>
+                  <thead><tr><th>Attendee</th><th>Booking</th><th>Credits</th><th>Notifications</th></tr></thead>
+                  <tbody>
+                    <tr><td>Aarav Mehta</td><td>QST-2198</td><td>AED 10 earned</td><td>Email, push, calendar</td></tr>
+                    <tr><td>Naina Shah</td><td>QST-2199</td><td>AED 0</td><td>Email, WhatsApp</td></tr>
+                    <tr><td>Riya Thomas</td><td>QST-2201</td><td>AED 20 redeemed</td><td>Email, push</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="portal-panel" id="analytics">
+              <div class="panel" style="padding:18px">
+                <h3>Performance snapshot</h3>
+                <div class="dashboard-grid">
+                  <div class="metric"><span>Conversion</span><strong>8.7%</strong></div>
+                  <div class="metric"><span>Favorites</span><strong>382</strong></div>
+                  <div class="metric"><span>Repeat buyers</span><strong>31%</strong></div>
+                  <div class="metric"><span>Newsletter clicks</span><strong>1.9K</strong></div>
+                </div>
+              </div>
+            </div>
+            <div class="portal-panel" id="payouts">
+              <div class="table-panel">
+                <table>
+                  <thead><tr><th>Event</th><th>Completion</th><th>Commission</th><th>Payout</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td>Clay Weekend</td><td>08 Jul</td><td>12%</td><td>AED 3,750</td><td><span class="badge live">Initiated</span></td></tr>
+                    <tr><td>Breathwork Circle</td><td>10 Jul</td><td>10%</td><td>AED 1,500</td><td><span class="badge info">Scheduled</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="admin">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>Admin command center</h2>
+            <p>Moderation, commission rules, refunds, CMS, newsletters, and platform performance for the Quest operations team.</p>
+          </div>
+          <button class="primary" id="approveSelected">Approve selected</button>
+        </div>
+        <div class="dashboard-grid">
+          <div class="metric"><span>GMV</span><strong>AED 1.2M</strong></div>
+          <div class="metric"><span>Commission</span><strong>AED 148K</strong></div>
+          <div class="metric"><span>Open refunds</span><strong>18</strong></div>
+          <div class="metric"><span>Moderation queue</span><strong>27</strong></div>
+        </div>
+        <div class="table-panel">
+          <table>
+            <thead><tr><th>Queue item</th><th>Owner</th><th>Risk</th><th>Action</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Brand verification</td><td>Veda Wellness</td><td>Low</td><td>KYC and venue review</td><td><span class="badge info">Pending</span></td></tr>
+              <tr><td>Workshop moderation</td><td>Clay Room Social</td><td>Low</td><td>Image, pricing, policy</td><td><span class="badge live">Ready</span></td></tr>
+              <tr><td>Refund exception</td><td>Booking QST-1182</td><td>Medium</td><td>Organizer cancellation</td><td><span class="badge warn">Review</span></td></tr>
+              <tr><td>Sponsored category</td><td>Design Month</td><td>Low</td><td>Homepage placement</td><td><span class="badge info">Scheduled</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="journeys">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>Workflow map</h2>
+            <p>The prototype translates the platform document into user-facing journeys and operational checkpoints.</p>
+          </div>
+        </div>
+        <div class="flow-grid">
+          <article class="timeline-item">
+            <h3>1. Attendee onboarding</h3>
+            <ol><li>Account created with email, Google, or Apple.</li><li>OTP verifies identity.</li><li>Interests and location tune the feed.</li><li>Recommendations, follows, and newsletters begin.</li></ol>
+          </article>
+          <article class="timeline-item">
+            <h3>2. Discovery to purchase</h3>
+            <ol><li>Search and filters return live events.</li><li>Slot availability validates before checkout.</li><li>Payment creates booking and digital ticket.</li><li>Calendar, reminders, and brand follows are attached.</li></ol>
+          </article>
+          <article class="timeline-item">
+            <h3>3. Organizer publishing</h3>
+            <ol><li>Brand profile enters pending state.</li><li>Admin verifies brand and event quality.</li><li>Listings publish to search.</li><li>Bookings, roster, inventory, and payouts update.</li></ol>
+          </article>
+          <article class="timeline-item">
+            <h3>4. Cancellation and refunds</h3>
+            <ol><li>User opens booking details.</li><li>Policy evaluates refund eligibility.</li><li>Inventory releases and waitlist alerts trigger.</li><li>Refund and confirmation notifications are sent.</li></ol>
+          </article>
+          <article class="timeline-item">
+            <h3>5. Waitlist management</h3>
+            <ol><li>Sold-out events show waitlist CTA.</li><li>Position is assigned.</li><li>Available seats notify eligible users.</li><li>Payment confirms booking and reorders queue.</li></ol>
+          </article>
+          <article class="timeline-item">
+            <h3>6. Loyalty and community</h3>
+            <ol><li>Welcome credits activate after signup.</li><li>Bookings earn loyalty credits.</li><li>Referral codes generate organic acquisition.</li><li>Newsletter recommendations increase repeat discovery.</li></ol>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="drawer" id="checkoutDrawer" aria-hidden="true">
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Checkout">
+      <div class="drawer-head">
+        <div>
+          <span class="badge info">Checkout</span>
+          <h2 style="margin:8px 0 0">Confirm booking</h2>
+        </div>
+        <button class="icon-button" id="closeCheckout" aria-label="Close checkout">×</button>
+      </div>
+      <div class="steps">
+        <div class="step done"><span class="dot">1</span><div><strong>Authenticated</strong><span>Email verified and JWT session active.</span></div></div>
+        <div class="step active"><span class="dot">2</span><div><strong>Payment method</strong><span>Card, UPI, wallet, credits, and saved coupons.</span></div></div>
+        <div class="step"><span class="dot">3</span><div><strong>Ticket issue</strong><span>QR ticket, email, push, and organizer notification.</span></div></div>
+      </div>
+      <label class="field">Payment
+        <select><option>UPI · quest@upi</option><option>Visa ending 2042</option><option>Use wallet credits only</option></select>
+      </label>
+      <div class="line-row"><span>Subtotal</span><strong>AED 110</strong></div>
+      <div class="line-row"><span>Credits applied</span><strong>-AED 20</strong></div>
+      <div class="line-row"><span>Total</span><strong>AED 90</strong></div>
+      <div class="actions" style="margin-top:18px">
+        <button class="primary" id="confirmPayment">Confirm payment</button>
+        <button class="outline" id="drawerWaitlist">Save for later</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="onboardingModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Onboarding">
+      <div class="drawer-head">
+        <div>
+          <span class="badge">Welcome credits included</span>
+          <h2 style="margin:8px 0 0">Set up your Quest feed</h2>
+        </div>
+        <button class="icon-button" id="closeOnboarding" aria-label="Close onboarding">×</button>
+      </div>
+      <div class="form-grid">
+        <label>Email<input value="maya@example.com"></label>
+        <label>OTP<input value="482913"></label>
+        <label class="full">Location<input value="Dubai"></label>
+      </div>
+      <div class="interest-grid">
+        <button class="chip active">Ceramics</button>
+        <button class="chip active">Wellness</button>
+        <button class="chip">Food</button>
+        <button class="chip active">Design</button>
+        <button class="chip">Family</button>
+        <button class="chip">Music</button>
+      </div>
+      <div class="actions">
+        <button class="primary" id="finishOnboarding">Generate feed</button>
+        <button class="outline" id="skipOnboarding">Skip</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const events = [
+      {
+        title: "Ceramic Handbuilding Weekend",
+        host: "Clay Room Social",
+        category: "creative",
+        label: "Creative",
+        location: "Al Quoz",
+        level: "Beginner friendly",
+        price: "AED 105",
+        total: "AED 90",
+        image: "https://images.unsplash.com/photo-1493106819501-66d381c466f1?auto=format&fit=crop&w=900&q=82",
+        description: "A tactile small-batch workshop for beginners. Learn pinch, coil, slab forms, glaze basics, and leave with two fired pieces shipped to your door."
+      },
+      {
+        title: "Breathwork & Sound Reset",
+        host: "Veda Wellness",
+        category: "wellness",
+        label: "Wellness",
+        location: "Jumeirah",
+        level: "All levels",
+        price: "AED 50",
+        total: "AED 35",
+        image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=900&q=82",
+        description: "A calm evening session combining guided breathwork, sound bowls, and recovery rituals for busy professionals."
+      },
+      {
+        title: "Sourdough & Seasonal Spreads",
+        host: "Al Fahidi Kitchen Studio",
+        category: "food",
+        label: "Food",
+        location: "Al Fahidi",
+        level: "Hands-on",
+        price: "AED 140",
+        total: "AED 120",
+        image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=82",
+        description: "Bake a loaf, build a starter, and pair seasonal preserves around a shared table."
+      },
+      {
+        title: "Founder Story Salon",
+        host: "Studio Circuit",
+        category: "community",
+        label: "Community",
+        location: "Business Bay",
+        level: "Networking",
+        price: "AED 40",
+        total: "AED 20",
+        image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=82",
+        description: "An intimate salon for makers, brand builders, and curious operators to unpack how communities grow."
+      },
+      {
+        title: "Family Terrarium Lab",
+        host: "Neighborhood Makers",
+        category: "family",
+        label: "Family",
+        location: "Al Barsha",
+        level: "Ages 7+",
+        price: "AED 70",
+        total: "AED 55",
+        image: "https://images.unsplash.com/photo-1459156212016-c812468e2115?auto=format&fit=crop&w=900&q=82",
+        description: "Build tiny living landscapes with soil layers, moss, stones, and low-maintenance plants."
+      },
+      {
+        title: "Street Photography Walk",
+        host: "Dubai Frames",
+        category: "creative",
+        label: "Creative",
+        location: "Downtown Dubai",
+        level: "Intermediate",
+        price: "AED 80",
+        total: "AED 60",
+        image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=82",
+        description: "A golden-hour photo walk focused on composition, street portraits, light, and visual storytelling."
+      }
+    ];
+
+    const viewButtons = document.querySelectorAll("[data-view-target]");
+    const views = document.querySelectorAll(".view");
+    const navButtons = document.querySelectorAll(".nav [data-view-target]");
+    const eventGrid = document.getElementById("eventGrid");
+    const toast = document.getElementById("toast");
+    const heroSection = document.querySelector(".hero");
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(window.toastTimer);
+      window.toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function setView(id) {
+      views.forEach(view => view.classList.toggle("active", view.id === id));
+      navButtons.forEach(button => button.classList.toggle("active", button.dataset.viewTarget === id));
+      heroSection.classList.toggle("hidden", id !== "discover");
+      window.scrollTo({ top: id === "discover" ? 390 : 0, behavior: "smooth" });
+    }
+
+    viewButtons.forEach(button => {
+      button.addEventListener("click", () => setView(button.dataset.viewTarget));
+    });
+
+    function renderEvents(filter = "all") {
+      const visible = filter === "all" ? events : events.filter(event => event.category === filter);
+      eventGrid.innerHTML = visible.map((event, index) => `
+        <article class="event-card">
+          <div class="event-media">
+            <img src="${event.image}" alt="${event.title}">
+            <span class="badge">${event.label}</span>
+          </div>
+          <div class="event-body">
+            <h3>${event.title}</h3>
+            <div class="meta"><span>${event.host}</span><span>${event.location}</span><span>${event.level}</span></div>
+            <p class="muted">${event.description}</p>
+            <div class="price-row">
+              <span class="price">${event.price}</span>
+              <button class="primary" data-event-index="${events.indexOf(event)}">${index === 2 ? "View Slots" : "Book"}</button>
+            </div>
+          </div>
+        </article>
+      `).join("");
+
+      document.querySelectorAll("[data-event-index]").forEach(button => {
+        button.addEventListener("click", () => {
+          selectEvent(Number(button.dataset.eventIndex));
+          setView("booking");
+        });
+      });
+    }
+
+    function selectEvent(index) {
+      const event = events[index];
+      document.getElementById("detailImage").src = event.image.replace("w=900", "w=1400");
+      document.getElementById("detailTitle").textContent = event.title;
+      document.getElementById("detailCategory").textContent = event.label;
+      document.getElementById("detailDescription").textContent = event.description;
+      document.getElementById("detailHost").textContent = `Hosted by ${event.host}`;
+      document.getElementById("detailLocation").textContent = event.location;
+      document.getElementById("detailLevel").textContent = event.level;
+      document.getElementById("summaryPrice").textContent = event.price;
+      document.getElementById("summaryTotal").textContent = event.total;
+    }
+
+    renderEvents();
+
+    document.getElementById("categoryFilters").addEventListener("click", event => {
+      const button = event.target.closest("[data-filter]");
+      if (!button) return;
+      document.querySelectorAll("[data-filter]").forEach(chip => chip.classList.remove("active"));
+      button.classList.add("active");
+      renderEvents(button.dataset.filter);
+    });
+
+    document.getElementById("slotGrid").addEventListener("click", event => {
+      const slot = event.target.closest(".slot");
+      if (!slot) return;
+      document.querySelectorAll(".slot").forEach(item => item.classList.remove("active"));
+      slot.classList.add("active");
+      showToast(slot.textContent.includes("Waitlist") ? "This slot is sold out. Waitlist flow is ready." : "Slot availability validated in real time.");
+    });
+
+    const checkoutDrawer = document.getElementById("checkoutDrawer");
+    document.getElementById("openCheckout").addEventListener("click", () => {
+      checkoutDrawer.classList.add("open");
+      checkoutDrawer.setAttribute("aria-hidden", "false");
+    });
+    document.getElementById("closeCheckout").addEventListener("click", () => {
+      checkoutDrawer.classList.remove("open");
+      checkoutDrawer.setAttribute("aria-hidden", "true");
+    });
+    document.getElementById("confirmPayment").addEventListener("click", () => {
+      checkoutDrawer.classList.remove("open");
+      showToast("Payment processed. Booking ID QST-4821 and QR ticket generated.");
+      setView("attendee");
+    });
+
+    const onboardingModal = document.getElementById("onboardingModal");
+    document.getElementById("openOnboarding").addEventListener("click", () => {
+      onboardingModal.classList.add("open");
+      onboardingModal.setAttribute("aria-hidden", "false");
+    });
+    document.getElementById("closeOnboarding").addEventListener("click", () => {
+      onboardingModal.classList.remove("open");
+      onboardingModal.setAttribute("aria-hidden", "true");
+    });
+    document.getElementById("skipOnboarding").addEventListener("click", () => onboardingModal.classList.remove("open"));
+    document.getElementById("finishOnboarding").addEventListener("click", () => {
+      onboardingModal.classList.remove("open");
+      showToast("Feed generated with welcome credits, interests, and Dubai location.");
+    });
+
+    document.querySelectorAll(".interest-grid .chip").forEach(chip => {
+      chip.addEventListener("click", () => chip.classList.toggle("active"));
+    });
+
+    document.getElementById("organizerMenu").addEventListener("click", event => {
+      const button = event.target.closest("[data-portal]");
+      if (!button) return;
+      document.querySelectorAll("[data-portal]").forEach(item => item.classList.remove("active"));
+      document.querySelectorAll(".portal-panel").forEach(panel => panel.classList.remove("active"));
+      button.classList.add("active");
+      document.getElementById(button.dataset.portal).classList.add("active");
+    });
+
+    [
+      ["runSearch", "Search refreshed with current filters and live availability."],
+      ["savePreferences", "Preferences saved. Newsletter and recommendations updated."],
+      ["joinWaitlist", "Waitlist joined. Position #4 assigned and seat alerts enabled."],
+      ["drawerWaitlist", "Saved. Reminder and favorite status updated."],
+      ["calendarAction", "Calendar invite created with reminder notifications."],
+      ["cancelBooking", "Policy checked: full refund eligible and inventory released."],
+      ["publishListing", "Listing submitted for admin moderation and search indexing."],
+      ["approveSelected", "Selected moderation items approved and notifications sent."]
+    ].forEach(([id, message]) => {
+      document.getElementById(id).addEventListener("click", () => showToast(message));
+    });
+  </script>
+</body>
+</html>
